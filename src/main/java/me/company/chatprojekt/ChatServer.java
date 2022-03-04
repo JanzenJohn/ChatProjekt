@@ -36,11 +36,6 @@ public class ChatServer extends Server {
         ConnectionState state = this.connectionStates.get(pClientIP + pClientPort);
 
         if (pMessage.equals("LOGOUT")) {
-            if (state.loggedIn) {
-                synchronized (this.onlineUsers) {
-                    this.onlineUsers.remove(state.userName);
-                }
-            }
             this.closeConnection(pClientIP, pClientPort);
         } else if (pMessage.startsWith("USER")) {
             if (state.loggedIn) {
@@ -127,7 +122,14 @@ public class ChatServer extends Server {
     @Override
     public void processClosingConnection(String pClientIP, int pClientPort) {
         // hier muss aufgeräumt werden was alles in ProcessNewConnection erschaffen wurde
+        ConnectionState state = this.connectionStates.get(pClientIP + pClientPort);
+        if (state.loggedIn) {
+            synchronized (this.onlineUsers) {
+                this.onlineUsers.remove(state.userName);
+            }
+        }
         this.connectionStates.remove(pClientIP + pClientPort);
+        
     }
 
 }

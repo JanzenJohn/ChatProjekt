@@ -16,10 +16,12 @@ public class ChatServer extends Server {
         ChatServer x = new ChatServer();
     }
     private HashMap<String, ConnectionState> connectionStates;
+    private HashMap<String, String> onlineUsers;
 
     public ChatServer() {
         super(4002);
         this.connectionStates = new HashMap<>();
+        this.onlineUsers = new HashMap<>();
     }
 
     @Override
@@ -34,6 +36,11 @@ public class ChatServer extends Server {
         ConnectionState state = this.connectionStates.get(pClientIP + pClientPort);
 
         if (pMessage.equals("LOGOUT")) {
+            if (state.loggedIn) {
+                synchronized (this.onlineUsers) {
+                    this.onlineUsers.remove(state.userName);
+                }
+            }
             this.closeConnection(pClientIP, pClientPort);
         } else if (pMessage.startsWith("USER")) {
             if (state.loggedIn) {
@@ -44,11 +51,14 @@ public class ChatServer extends Server {
                 this.send(pClientIP, pClientPort, "+OK Password required");
             }
         } else if (pMessage.startsWith("PASS")) {
-            if (state.loggedIn) {
-                this.send(pClientIP, pClientPort, "-ERR Already Logged in");
-            } else {
-                this.send(pClientIP, pClientPort, "+OK Logged in as " + state.userName);
-                state.loggedIn = true;
+            synchronized (this.onlineUsers) {
+                if (state.loggedIn || this.onlineUsers.containsKey(state.userName)) {
+                    this.send(pClientIP, pClientPort, "-ERR Already Logged in");
+                } else {
+                    this.onlineUsers.put(state.userName, pClientIP + pClientPort);
+                    this.send(pClientIP, pClientPort, "+OK Logged in as " + state.userName);
+                    state.loggedIn = true;
+                }
             }
 
         } else if (pMessage.equals("WHOAMI")) {

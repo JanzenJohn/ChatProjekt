@@ -71,7 +71,7 @@ public class ChatServer extends Server {
                     state.loggedIn = true;
                 }
             }
-        } else if (pMessage.startsWith("SENDTO")) {
+        } else if (pMessage.startsWith("SENDTO ")) {
             try {
                 String info[] = pMessage.split(" ", 2)[1].split("\\$", 2);
                 String username = info[0];
@@ -85,6 +85,22 @@ public class ChatServer extends Server {
                     this.send(contactIP, Integer.parseInt(contactPort), "$" + state.userName + "$1$" + msg);
                     this.send(pClientIP, pClientPort, "+OK Message processed");
                 }
+            } catch (IndexOutOfBoundsException e) {
+                this.send(pClientIP, pClientPort, "-ERR Message malformed");
+            }
+        } else if (pMessage.startsWith("SENDTOALL ")) {
+            try {
+                String msg = pMessage.split(" ", 2)[1];
+                this.send(pClientIP, pClientPort, "+OK Message processed");
+                String users[] = new String[this.onlineUsers.size()];
+                this.onlineUsers.keySet().toArray(users);
+                for (String user : users) {
+                    String contact = this.onlineUsers.get(user);
+                    String contactIP = contact.split(":")[0];
+                    String contactPort = contact.split(":")[1];
+                    this.send(contactIP, Integer.parseInt(contactPort), "$" + state.userName + "$0$" + msg);
+                }
+
             } catch (IndexOutOfBoundsException e) {
                 this.send(pClientIP, pClientPort, "-ERR Message malformed");
             }

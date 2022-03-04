@@ -46,7 +46,13 @@ public class ChatServer extends Server {
             if (state.loggedIn) {
                 this.send(pClientIP, pClientPort, "-ERR Already Logged in");
             } else {
-                String suggestedUsername = pMessage.split(" ", 2)[1];
+
+                String suggestedUsername;
+                try {
+                    suggestedUsername = pMessage.split(" ", 2)[1];
+                } catch (IndexOutOfBoundsException e) {
+                    suggestedUsername = ":";
+                }
                 suggestedUsername = suggestedUsername.replaceAll("\\$", "");
                 if (suggestedUsername.length() < 3) {
                     this.send(pClientIP, pClientPort, "-ERR Username too short");
@@ -71,14 +77,14 @@ public class ChatServer extends Server {
             if (!state.loggedIn) {
                 this.send(pClientIP, pClientPort, "NOBODY");
             } else {
-                this.send(pClientIP, pClientPort, state.userName);
+                this.send(pClientIP, pClientPort, "\"" + state.userName + "\"");
             }
         } else if (pMessage.equals("ISON")) {
             this.send(pClientIP, pClientPort, "+OK online");
             String users[] = new String[this.onlineUsers.size()];
             this.onlineUsers.keySet().toArray(users);
             for (String user : users) {
-                this.send(pClientIP, pClientPort, user);
+                this.send(pClientIP, pClientPort, "\"" + user + "\"");
             }
             this.send(pClientIP, pClientPort, ".");
         } else {

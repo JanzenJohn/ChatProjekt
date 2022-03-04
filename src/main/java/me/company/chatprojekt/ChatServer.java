@@ -71,7 +71,22 @@ public class ChatServer extends Server {
                     state.loggedIn = true;
                 }
             }
-
+        } else if (pMessage.startsWith("SENDTO")) {
+            try{
+                String info[] = pMessage.split(" ", 2)[1].split("\\$", 2);
+                String username = info[0];
+                String msg = info[1];
+                if (!this.onlineUsers.containsKey(username)){
+                    this.send(pClientIP, pClientPort, "-ERR User not online/exitst");
+                } else {
+                    String contact = this.onlineUsers.get(username);
+                    String contactIP = contact.split(":")[0];
+                    String contactPort = contact.split(":")[1];
+                    this.send(contactIP, Integer.parseInt(contactPort), "$" + state.userName + "$1$" + msg);
+                }
+            } catch (IndexOutOfBoundsException e){
+                this.send(pClientIP, pClientPort, "-ERR Message malformed");
+            }
         } else if (pMessage.equals("WHOAMI")) {
             // Undokumentierte anfrage (funktioniert nicht auf allen servern)
             if (!state.loggedIn) {

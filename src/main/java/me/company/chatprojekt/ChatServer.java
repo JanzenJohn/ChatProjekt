@@ -47,8 +47,13 @@ public class ChatServer extends Server {
                 this.send(pClientIP, pClientPort, "-ERR Already Logged in");
             } else {
                 String suggestedUsername = pMessage.split(" ", 2)[1];
-                state.userName = suggestedUsername.replaceAll("\\$", "");
-                this.send(pClientIP, pClientPort, "+OK Password required");
+                suggestedUsername = suggestedUsername.replaceAll("\\$", "");
+                if (suggestedUsername.length() < 3) {
+                    this.send(pClientIP, pClientPort, "-ERR Username too short");
+                } else {
+                    state.userName = suggestedUsername;
+                    this.send(pClientIP, pClientPort, "+OK Password required");
+                }
             }
         } else if (pMessage.startsWith("PASS")) {
             synchronized (this.onlineUsers) {
@@ -68,6 +73,14 @@ public class ChatServer extends Server {
             } else {
                 this.send(pClientIP, pClientPort, state.userName);
             }
+        } else if (pMessage.equals("ISON")) {
+            this.send(pClientIP, pClientPort, "+OK online");
+            String users[] = new String[this.onlineUsers.size()];
+            this.onlineUsers.keySet().toArray(users);
+            for (String user : users) {
+                this.send(pClientIP, pClientPort, user);
+            }
+            this.send(pClientIP, pClientPort, ".");
         } else {
             this.send(pClientIP, pClientPort, "-ERR Command unrecognized");
         }

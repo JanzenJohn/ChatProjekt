@@ -60,7 +60,7 @@ public class ChatServer extends Server {
                 if (state.loggedIn || this.onlineUsers.containsKey(state.userName)) {
                     this.send(pClientIP, pClientPort, "-ERR Already Logged in");
                 } else {
-                    this.onlineUsers.put(state.userName, pClientIP + pClientPort);
+                    this.onlineUsers.put(state.userName, pClientIP + ":" + pClientPort);
                     this.send(pClientIP, pClientPort, "+OK Logged in as " + state.userName);
                     state.loggedIn = true;
                 }

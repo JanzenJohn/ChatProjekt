@@ -15,8 +15,8 @@ public class ChatServer extends Server {
     public static void main(String[] args) {
         ChatServer x = new ChatServer();
     }
-    private HashMap<String, ConnectionState> connectionStates;
-    private HashMap<String, String> onlineUsers;
+    private final HashMap<String, ConnectionState> connectionStates;
+    private final HashMap<String, String> onlineUsers;
 
     public ChatServer() {
         super(4002);

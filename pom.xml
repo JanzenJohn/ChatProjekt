@@ -44,7 +44,7 @@
                             <archive>
                                 <manifest>
                                     <addClasspath>true</addClasspath>
-                                    <mainClass>me.company.chatprojekt.View</mainClass>
+                                    <mainClass>me.company.chatprojekt.ChatServer</mainClass>
                                 </manifest>
                             </archive>
                         </configuration>

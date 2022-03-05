@@ -41,6 +41,9 @@ public class ChatClient extends Client {
         } else if (pMessage.startsWith("$")) {
             this.messages.enqueue(pMessage);
             this.messageNotifier.call();
+        }else if (pMessage.startsWith("-ERR User unknown")){
+            this.send("REGISTER " + this.username + "$" + this.password);
+            this.send("USER " + this.username);
         } else if (pMessage.startsWith("-ERR")) {
             if (this.loggedIn) {
                 throw new RuntimeException("Server responsed with " + pMessage);

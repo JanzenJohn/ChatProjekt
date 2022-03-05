@@ -4,6 +4,7 @@
  */
 package me.company.chatprojekt;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 
 /**
@@ -12,16 +13,18 @@ import java.util.HashMap;
  */
 public class ChatServer extends Server {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException {
         ChatServer x = new ChatServer();
     }
     private final HashMap<String, ConnectionState> connectionStates;
     private final HashMap<String, String> onlineUsers;
+    private final Database db;
 
-    public ChatServer() {
+    public ChatServer() throws SQLException {
         super(4002);
         this.connectionStates = new HashMap<>();
         this.onlineUsers = new HashMap<>();
+        this.db = new Database();
     }
 
     @Override
@@ -37,6 +40,27 @@ public class ChatServer extends Server {
 
         if (pMessage.equals("LOGOUT")) {
             this.closeConnection(pClientIP, pClientPort);
+        } else if (pMessage.startsWith("REGISTER")) {
+            try {
+                String username = pMessage.split(" ", 2)[1].split("\\$", 2)[0];
+                String pass = pMessage.split(" ", 2)[1].split("\\$", 2)[1];
+                if (state.loggedIn) {
+                    this.send(pClientIP, pClientPort, "-ERR Already Logged in");
+                } else if (username.equals("SYSTEM") || username.length() < 3) {
+                    this.send(pClientIP, pClientPort, "-ERR Illegal Username");
+                } else if (db.exists(username)) {
+                    this.send(pClientIP, pClientPort, "-ERR User already exists");
+                } else {
+                    db.create(username, pass);
+                    this.send(pClientIP, pClientPort, "+OK created user " + username);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                this.send(pClientIP, pClientPort, "-ERR Database error contact admin");
+            } catch (IndexOutOfBoundsException e) {
+                this.send(pClientIP, pClientPort, "-ERR Message malformed");
+            }
+
         } else if (pMessage.startsWith("USER")) {
             if (state.loggedIn) {
                 this.send(pClientIP, pClientPort, "-ERR Already Logged in");
@@ -49,26 +73,41 @@ public class ChatServer extends Server {
                     suggestedUsername = ":";
                 }
                 suggestedUsername = suggestedUsername.replaceAll("\\$", "");
-                if (suggestedUsername.length() < 3 || suggestedUsername.equals("SYSTEM")) {
-                    this.send(pClientIP, pClientPort, "-ERR Username too short");
-                } else {
-                    state.userName = suggestedUsername;
-                    this.send(pClientIP, pClientPort, "+OK Password required");
+                try {
+                    if (suggestedUsername.length() < 3 || suggestedUsername.equals("SYSTEM")) {
+                        this.send(pClientIP, pClientPort, "-ERR Username too short");
+                    } else if (db.exists(suggestedUsername)) {
+                        state.userName = suggestedUsername;
+                        this.send(pClientIP, pClientPort, "+OK Password required");
+                    } else {
+                        this.send(pClientIP, pClientPort, "-ERR User unknown");
+                    }
+                } catch (SQLException e) {
+                    this.send(pClientIP, pClientPort, "-ERR Database error contact server admin");
                 }
             }
         } else if (pMessage.startsWith("PASS")) {
-            synchronized (this.onlineUsers) {
-                if (state.loggedIn || this.onlineUsers.containsKey(state.userName)) {
-                    this.send(pClientIP, pClientPort, "-ERR Already Logged in");
-                } else {
-                    for (String s : this.onlineUsers.keySet()){
-                        this.send(pClientIP, pClientPort, "$SYSTEM$0$+"+s);
+            try {
+                String password = pMessage.split(" ", 2)[1];
+                synchronized (this.onlineUsers) {
+                    if (state.loggedIn || this.onlineUsers.containsKey(state.userName)) {
+                        this.send(pClientIP, pClientPort, "-ERR Already Logged in");
+                    } else if (db.login(state.userName, password)) {
+                        for (String s : this.onlineUsers.keySet()) {
+                            this.send(pClientIP, pClientPort, "$SYSTEM$0$+" + s);
+                        }
+                        this.onlineUsers.put(state.userName, pClientIP + ":" + pClientPort);
+                        this.send(pClientIP, pClientPort, "+OK Logged in as " + state.userName);
+                        this.broadCast("$SYSTEM$0$+" + state.userName);
+                        state.loggedIn = true;
+                    } else {
+                        this.send(pClientIP, pClientPort, "-ERR Password wrong");
                     }
-                    this.onlineUsers.put(state.userName, pClientIP + ":" + pClientPort);
-                    this.send(pClientIP, pClientPort, "+OK Logged in as " + state.userName);
-                    this.broadCast("$SYSTEM$0$+" + state.userName);
-                    state.loggedIn = true;
                 }
+            } catch (IndexOutOfBoundsException e) {
+                this.send(pClientIP, pClientPort, "-ERR Message malformed");
+            } catch (SQLException e) {
+                this.send(pClientIP, pClientPort, "-ERR Database error contact server admin");
             }
         } else if (pMessage.startsWith("SENDTO ")) {
             try {
@@ -123,7 +162,7 @@ public class ChatServer extends Server {
                 this.onlineUsers.remove(state.userName);
                 this.broadCast("$SYSTEM$0$-" + state.userName);
             }
-            
+
         }
         this.connectionStates.remove(pClientIP + pClientPort);
 

@@ -27,7 +27,7 @@ public class ChatServer extends Server {
     @Override
     public void processNewConnection(String pClientIP, int pClientPort) {
         this.connectionStates.put(pClientIP + pClientPort, new ConnectionState());
-        this.send(pClientIP, pClientPort, "+OK Server ready! User required");
+        this.send(pClientIP, pClientPort, "+OK Server ready! User required +oln_support");
     }
 
     @Override
@@ -49,7 +49,7 @@ public class ChatServer extends Server {
                     suggestedUsername = ":";
                 }
                 suggestedUsername = suggestedUsername.replaceAll("\\$", "");
-                if (suggestedUsername.length() < 3) {
+                if (suggestedUsername.length() < 3 || suggestedUsername.equals("SYSTEM")) {
                     this.send(pClientIP, pClientPort, "-ERR Username too short");
                 } else {
                     state.userName = suggestedUsername;
@@ -61,8 +61,12 @@ public class ChatServer extends Server {
                 if (state.loggedIn || this.onlineUsers.containsKey(state.userName)) {
                     this.send(pClientIP, pClientPort, "-ERR Already Logged in");
                 } else {
+                    for (String s : this.onlineUsers.keySet()){
+                        this.send(pClientIP, pClientPort, "$SYSTEM$0$+"+s);
+                    }
                     this.onlineUsers.put(state.userName, pClientIP + ":" + pClientPort);
                     this.send(pClientIP, pClientPort, "+OK Logged in as " + state.userName);
+                    this.broadCast("$SYSTEM$0$+" + state.userName);
                     state.loggedIn = true;
                 }
             }
@@ -72,7 +76,7 @@ public class ChatServer extends Server {
                 String username = info[0];
                 String msg = info[1];
                 if (!this.onlineUsers.containsKey(username)) {
-                    this.send(pClientIP, pClientPort, "-ERR User not online/exitst");
+                    this.send(pClientIP, pClientPort, "-ERR User not online/exists");
                 } else {
                     String contact = this.onlineUsers.get(username);
                     String contactIP = contact.split(":")[0];
@@ -86,16 +90,7 @@ public class ChatServer extends Server {
         } else if (pMessage.startsWith("SENDTOALL ")) {
             try {
                 String msg = pMessage.split(" ", 2)[1];
-                this.send(pClientIP, pClientPort, "+OK Message processed");
-                String users[] = new String[this.onlineUsers.size()];
-                this.onlineUsers.keySet().toArray(users);
-                for (String user : users) {
-                    String contact = this.onlineUsers.get(user);
-                    String contactIP = contact.split(":")[0];
-                    String contactPort = contact.split(":")[1];
-                    this.send(contactIP, Integer.parseInt(contactPort), "$" + state.userName + "$0$" + msg);
-                }
-
+                this.broadCast("$" + state.userName + "$0$" + msg);
             } catch (IndexOutOfBoundsException e) {
                 this.send(pClientIP, pClientPort, "-ERR Message malformed");
             }
@@ -126,10 +121,23 @@ public class ChatServer extends Server {
         if (state.loggedIn) {
             synchronized (this.onlineUsers) {
                 this.onlineUsers.remove(state.userName);
+                this.broadCast("$SYSTEM$0$-" + state.userName);
             }
+            
         }
         this.connectionStates.remove(pClientIP + pClientPort);
-        
+
+    }
+
+    public void broadCast(String msg) {
+        String users[] = new String[this.onlineUsers.size()];
+        this.onlineUsers.keySet().toArray(users);
+        for (String user : users) {
+            String contact = this.onlineUsers.get(user);
+            String contactIP = contact.split(":")[0];
+            String contactPort = contact.split(":")[1];
+            this.send(contactIP, Integer.parseInt(contactPort), msg);
+        }
     }
 
 }

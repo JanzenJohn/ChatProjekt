@@ -11,19 +11,21 @@ import java.util.ArrayList;
  * @author john
  */
 public class ChatClient extends Client {
-    
+
     private final String username;
     private final String password;
     private final Queue<String> messages;
-    private final Signaler messageSignaler;
+    private final Notifier messageNotifier;
     private boolean loggedIn;
+    public boolean hasOlnSupport;
 
-    public ChatClient(String pHost, int pPort, String pUsername, String pPassword, Signaler pMessageSignaler) {
+    public ChatClient(String pHost, int pPort, String pUsername, String pPassword, Notifier pMessageNotifier, Notifier pOnlineNotifier) {
         super(pHost, pPort);
         this.username = pUsername;
         this.password = pPassword;
         this.messages = new Queue<>();
-        this.messageSignaler = pMessageSignaler;
+        this.messageNotifier = pMessageNotifier;
+        this.hasOlnSupport = false;
         this.loggedIn = false;
     }
 
@@ -31,13 +33,14 @@ public class ChatClient extends Client {
     public void processMessage(String pMessage) {
         if (pMessage.startsWith("+OK Server ready!")) {
             this.send("USER " + this.username);
+            this.hasOlnSupport = pMessage.contains("+oln_support");
         } else if (pMessage.equals("+OK Password required")) {
             this.send("PASS " + this.password);
         } else if (pMessage.startsWith("+OK Logged in as")) {
             this.loggedIn = true;
         } else if (pMessage.startsWith("$")) {
             this.messages.enqueue(pMessage);
-            this.messageSignaler.doNotify();
+            this.messageNotifier.call();
         } else if (pMessage.startsWith("-ERR")) {
             if (this.loggedIn) {
                 throw new RuntimeException("Server responsed with " + pMessage);
@@ -56,8 +59,11 @@ public class ChatClient extends Client {
         return list;
     }
 
-    public void sendMessage(String msg) {
-        this.send("SENDTOALL " + msg);
+    public void sendMessage(String pMsg) {
+        this.send("SENDTOALL " + pMsg);
+    }
+    public void sendMessage(String pUser, String pMsg) {
+        this.send("SENDTO " + pUser + "$" + pMsg);
     }
 
 }

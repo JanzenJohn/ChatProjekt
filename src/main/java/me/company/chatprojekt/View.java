@@ -95,6 +95,11 @@ public class View extends javax.swing.JFrame {
                 jTextField4ActionPerformed(evt);
             }
         });
+        jTextField4.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                jTextField4KeyPressed(evt);
+            }
+        });
 
         sendButton.setText("Send");
         sendButton.addActionListener(new java.awt.event.ActionListener() {
@@ -184,6 +189,17 @@ public class View extends javax.swing.JFrame {
     private void jList1ValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_jList1ValueChanged
         this.jTextArea1.setText(this.control.getChat(jList1.getSelectedValue()));
     }//GEN-LAST:event_jList1ValueChanged
+
+    private void jTextField4KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField4KeyPressed
+       if(evt.getKeyCode() == 10)
+       {if (this.jList1.getSelectedValue() == null || this.jList1.getSelectedValue().equals("$GLOBAL")) {
+            this.control.sendAll(this.jTextField4.getText());
+        } else {
+            this.control.sendTo(this.jList1.getSelectedValue(), this.jTextField4.getText());
+        }
+       jTextField4.setText("");
+       }
+    }//GEN-LAST:event_jTextField4KeyPressed
 
     /**
      * @param args the command line arguments

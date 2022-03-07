@@ -48,6 +48,8 @@ public class ChatServer extends Server {
                     this.send(pClientIP, pClientPort, "-ERR Already Logged in");
                 } else if (username.equals("SYSTEM") || username.length() < 3) {
                     this.send(pClientIP, pClientPort, "-ERR Illegal Username");
+                } else if (username.length() > 64) {
+                    this.send(pClientIP, pClientPort, "-ERR Username too long");
                 } else if (db.exists(username)) {
                     this.send(pClientIP, pClientPort, "-ERR User already exists");
                 } else {
@@ -61,7 +63,8 @@ public class ChatServer extends Server {
                 this.send(pClientIP, pClientPort, "-ERR Message malformed");
             }
 
-        } else if (pMessage.startsWith("USER")) {
+        } else if (pMessage.startsWith(
+                "USER")) {
             if (state.loggedIn) {
                 this.send(pClientIP, pClientPort, "-ERR Already Logged in");
             } else {
@@ -86,7 +89,8 @@ public class ChatServer extends Server {
                     this.send(pClientIP, pClientPort, "-ERR Database error contact server admin");
                 }
             }
-        } else if (pMessage.startsWith("PASS")) {
+        } else if (pMessage.startsWith(
+                "PASS")) {
             try {
                 String password = pMessage.split(" ", 2)[1];
                 synchronized (this.onlineUsers) {
@@ -109,7 +113,8 @@ public class ChatServer extends Server {
             } catch (SQLException e) {
                 this.send(pClientIP, pClientPort, "-ERR Database error contact server admin");
             }
-        } else if (pMessage.startsWith("SENDTO ")) {
+        } else if (pMessage.startsWith(
+                "SENDTO ")) {
             try {
                 String info[] = pMessage.split(" ", 2)[1].split("\\$", 2);
                 String username = info[0];
@@ -118,6 +123,8 @@ public class ChatServer extends Server {
                     this.send(pClientIP, pClientPort, "-ERR User not online/exists");
                 } else if (state.lastMessages.size() > 30) {
                     this.send(pClientIP, pClientPort, "-ERR Ratelimited");
+                } else if (msg.length() > 1024) {
+                    this.send(pClientIP, pClientPort, "-ERR Message too long");
                 } else {
                     String contact = this.onlineUsers.get(username);
                     String contactIP = contact.split(":")[0];
@@ -138,7 +145,8 @@ public class ChatServer extends Server {
             } catch (IndexOutOfBoundsException e) {
                 this.send(pClientIP, pClientPort, "-ERR Message malformed");
             }
-        } else if (pMessage.startsWith("SENDTOALL ")) {
+        } else if (pMessage.startsWith(
+                "SENDTOALL ")) {
             try {
                 if (state.lastMessages.size() > 30) {
                     this.send(pClientIP, pClientPort, "-ERR Ratelimited");
@@ -159,14 +167,16 @@ public class ChatServer extends Server {
             } catch (IndexOutOfBoundsException e) {
                 this.send(pClientIP, pClientPort, "-ERR Message malformed");
             }
-        } else if (pMessage.equals("WHOAMI")) {
+        } else if (pMessage.equals(
+                "WHOAMI")) {
             // Undokumentierte anfrage (funktioniert nicht auf allen servern)
             if (!state.loggedIn) {
                 this.send(pClientIP, pClientPort, "NOBODY");
             } else {
                 this.send(pClientIP, pClientPort, "\"" + state.userName + "\"");
             }
-        } else if (pMessage.equals("ISON")) {
+        } else if (pMessage.equals(
+                "ISON")) {
             this.send(pClientIP, pClientPort, "+OK online");
             String users[] = new String[this.onlineUsers.size()];
             this.onlineUsers.keySet().toArray(users);

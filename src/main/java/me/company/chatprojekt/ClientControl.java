@@ -16,11 +16,12 @@ public class ClientControl {
 
     private ChatClient client;
     private final HashMap<String, String> chats;
-    private final Notifier fetcherActivate, chatUpdated, onlineListUpdated;
+    private final Notifier fetcherActivate, chatUpdated, onlineListUpdated, exceptionNotifier;
 
-    public ClientControl(Notifier pChatUpdateSignaler, Notifier pOnlineListUpdatedSignaler) {
+    public ClientControl(Notifier pChatUpdateSignaler, Notifier pOnlineListUpdatedSignaler, Notifier pExceptionNotifier) {
         this.chatUpdated = pChatUpdateSignaler;
         this.onlineListUpdated = pOnlineListUpdatedSignaler;
+        this.exceptionNotifier = pExceptionNotifier;
         this.chats = new HashMap<>();
         this.chats.put("$GLOBAL", "");
         this.fetcherActivate = new Notifier();
@@ -58,7 +59,7 @@ public class ClientControl {
         if (this.client != null && this.client.isConnected()) {
             this.client.close();
         }
-        this.client = new ChatClient(pHost, pPort, pUsername, pPassword, this.fetcherActivate, this.onlineListUpdated);
+        this.client = new ChatClient(pHost, pPort, pUsername, pPassword, this.fetcherActivate, this.exceptionNotifier);
 
     }
 

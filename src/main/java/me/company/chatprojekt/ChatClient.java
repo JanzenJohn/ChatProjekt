@@ -16,15 +16,17 @@ public class ChatClient extends Client {
     private final String password;
     private final Queue<String> messages;
     private final Notifier messageNotifier;
+    private final Notifier exceptionNotifier;
     private boolean loggedIn;
     public boolean hasOlnSupport;
 
-    public ChatClient(String pHost, int pPort, String pUsername, String pPassword, Notifier pMessageNotifier, Notifier pOnlineNotifier) {
+    public ChatClient(String pHost, int pPort, String pUsername, String pPassword, Notifier pMessageNotifier, Notifier pExceptionNotifier) {
         super(pHost, pPort);
         this.username = pUsername;
         this.password = pPassword;
         this.messages = new Queue<>();
         this.messageNotifier = pMessageNotifier;
+        this.exceptionNotifier = pExceptionNotifier;
         this.hasOlnSupport = false;
         this.loggedIn = false;
     }
@@ -45,11 +47,7 @@ public class ChatClient extends Client {
             this.send("REGISTER " + this.username + "$" + this.password);
             this.send("USER " + this.username);
         } else if (pMessage.startsWith("-ERR")) {
-            if (this.loggedIn) {
-                throw new RuntimeException("Server responsed with " + pMessage);
-            } else {
-                this.close();
-            }
+            this.exceptionNotifier.call(pMessage);
         }
     }
 

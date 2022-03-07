@@ -5,6 +5,7 @@
 package me.company.chatprojekt;
 
 import javax.swing.DefaultListModel;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -15,6 +16,7 @@ public class View extends javax.swing.JFrame {
     private final ClientControl control;
     private final Notifier chatUpdatedNotifier;
     private final Notifier onlineListUpdatedNotfier;
+    private final Notifier exceptionNotifier;
     private final DefaultListModel<String> onlineUsers;
 
     /**
@@ -43,7 +45,15 @@ public class View extends javax.swing.JFrame {
             }
         };
         this.chatUpdatedNotifier.addListener(temp);
-        this.control = new ClientControl(this.chatUpdatedNotifier, this.onlineListUpdatedNotfier);
+        this.exceptionNotifier = new Notifier();
+        temp = new NotifierResponder() {
+            @Override
+            public void onMessage(String msg) {
+                JOptionPane.showMessageDialog(null, msg);
+            }
+        };
+        this.exceptionNotifier.addListener(temp);
+        this.control = new ClientControl(this.chatUpdatedNotifier, this.onlineListUpdatedNotfier, this.exceptionNotifier);
         this.onlineUsers = new DefaultListModel<>();
         this.jList1.setModel(onlineUsers);
         this.onlineUsers.addElement("$GLOBAL");

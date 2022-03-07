@@ -41,7 +41,7 @@ public class View extends javax.swing.JFrame {
         temp = new NotifierResponder() {
             @Override
             public void onMessage(String pMessage) {
-                jTextArea1.setText(control.getChat(jList1.getSelectedValue()));
+                mainTextArea.setText(control.getChat(onlineUserList.getSelectedValue()));
             }
         };
         this.chatUpdatedNotifier.addListener(temp);
@@ -55,9 +55,9 @@ public class View extends javax.swing.JFrame {
         this.exceptionNotifier.addListener(temp);
         this.control = new ClientControl(this.chatUpdatedNotifier, this.onlineListUpdatedNotfier, this.exceptionNotifier);
         this.onlineUsers = new DefaultListModel<>();
-        this.jList1.setModel(onlineUsers);
+        this.onlineUserList.setModel(onlineUsers);
         this.onlineUsers.addElement("$GLOBAL");
-        this.jList1.setSelectedIndex(0);
+        this.onlineUserList.setSelectedIndex(0);
     }
 
     /**
@@ -74,11 +74,11 @@ public class View extends javax.swing.JFrame {
         passwordTextField = new javax.swing.JTextField();
         connectButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
-        jTextField4 = new javax.swing.JTextField();
+        mainTextArea = new javax.swing.JTextArea();
+        messageTextField = new javax.swing.JTextField();
         sendButton = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList<>();
+        onlineUserList = new javax.swing.JList<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -95,20 +95,20 @@ public class View extends javax.swing.JFrame {
             }
         });
 
-        jTextArea1.setEditable(false);
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
+        mainTextArea.setEditable(false);
+        mainTextArea.setColumns(20);
+        mainTextArea.setRows(5);
+        jScrollPane1.setViewportView(mainTextArea);
 
-        jTextField4.setText("message");
-        jTextField4.addActionListener(new java.awt.event.ActionListener() {
+        messageTextField.setText("message");
+        messageTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField4ActionPerformed(evt);
+                messageTextFieldActionPerformed(evt);
             }
         });
-        jTextField4.addKeyListener(new java.awt.event.KeyAdapter() {
+        messageTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
-                jTextField4KeyPressed(evt);
+                messageTextFieldKeyPressed(evt);
             }
         });
 
@@ -119,17 +119,17 @@ public class View extends javax.swing.JFrame {
             }
         });
 
-        jList1.setModel(new javax.swing.AbstractListModel<String>() {
+        onlineUserList.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "$GLOBAL", "user 1", "user 2" };
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
-        jList1.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+        onlineUserList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-                jList1ValueChanged(evt);
+                onlineUserListValueChanged(evt);
             }
         });
-        jScrollPane2.setViewportView(jList1);
+        jScrollPane2.setViewportView(onlineUserList);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -139,7 +139,7 @@ public class View extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jTextField4)
+                        .addComponent(messageTextField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(sendButton, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
@@ -171,7 +171,7 @@ public class View extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(sendButton, javax.swing.GroupLayout.DEFAULT_SIZE, 51, Short.MAX_VALUE)
-                            .addComponent(jTextField4)))
+                            .addComponent(messageTextField)))
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addContainerGap())
         );
@@ -185,32 +185,32 @@ public class View extends javax.swing.JFrame {
         this.control.login(this.hostNameField.getText(), 4002, this.userTextField.getText(), this.passwordTextField.getText());
     }//GEN-LAST:event_connectButtonActionPerformed
 
-    private void jTextField4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField4ActionPerformed
+    private void messageTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_messageTextFieldActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField4ActionPerformed
+    }//GEN-LAST:event_messageTextFieldActionPerformed
 
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
-        if (this.jList1.getSelectedValue() == null || this.jList1.getSelectedValue().equals("$GLOBAL")) {
-            this.control.sendAll(this.jTextField4.getText());
-        } else {
-            this.control.sendTo(this.jList1.getSelectedValue(), this.jTextField4.getText());
-        }
+        this.sendMsg();
     }//GEN-LAST:event_sendButtonActionPerformed
 
-    private void jList1ValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_jList1ValueChanged
-        this.jTextArea1.setText(this.control.getChat(jList1.getSelectedValue()));
-    }//GEN-LAST:event_jList1ValueChanged
+    private void onlineUserListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_onlineUserListValueChanged
+        this.mainTextArea.setText(this.control.getChat(onlineUserList.getSelectedValue()));
+    }//GEN-LAST:event_onlineUserListValueChanged
 
-    private void jTextField4KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField4KeyPressed
-       if(evt.getKeyCode() == 10)
-       {if (this.jList1.getSelectedValue() == null || this.jList1.getSelectedValue().equals("$GLOBAL")) {
-            this.control.sendAll(this.jTextField4.getText());
-        } else {
-            this.control.sendTo(this.jList1.getSelectedValue(), this.jTextField4.getText());
+    private void messageTextFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_messageTextFieldKeyPressed
+        if (evt.getKeyCode() == 10) {
+            this.sendMsg();
         }
-       jTextField4.setText("");
-       }
-    }//GEN-LAST:event_jTextField4KeyPressed
+    }//GEN-LAST:event_messageTextFieldKeyPressed
+
+    private void sendMsg() {
+        if (this.onlineUserList.getSelectedValue() == null || this.onlineUserList.getSelectedValue().equals("$GLOBAL")) {
+            this.control.sendAll(this.messageTextField.getText());
+        } else {
+            this.control.sendTo(this.onlineUserList.getSelectedValue(), this.messageTextField.getText());
+        }
+        messageTextField.setText("");
+    }
 
     /**
      * @param args the command line arguments
@@ -250,11 +250,11 @@ public class View extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton connectButton;
     private javax.swing.JTextField hostNameField;
-    private javax.swing.JList<String> jList1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JTextField jTextField4;
+    private javax.swing.JTextArea mainTextArea;
+    private javax.swing.JTextField messageTextField;
+    private javax.swing.JList<String> onlineUserList;
     private javax.swing.JTextField passwordTextField;
     private javax.swing.JButton sendButton;
     private javax.swing.JTextField userTextField;

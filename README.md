@@ -1,3 +1,5 @@
+![build](https://github.com/JanzenJohn/ChatProjekt/actions/workflows/maven.yml/badge.svg)
+
 # ChatProjekt
 
 A simple messenger (Server and Client) using port 4002 to communicate

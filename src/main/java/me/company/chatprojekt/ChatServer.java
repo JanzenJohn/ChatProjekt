@@ -116,20 +116,46 @@ public class ChatServer extends Server {
                 String msg = info[1];
                 if (!this.onlineUsers.containsKey(username)) {
                     this.send(pClientIP, pClientPort, "-ERR User not online/exists");
+                } else if (state.lastMessages.size() > 30) {
+                    this.send(pClientIP, pClientPort, "-ERR Ratelimited");
                 } else {
                     String contact = this.onlineUsers.get(username);
                     String contactIP = contact.split(":")[0];
                     String contactPort = contact.split(":")[1];
                     this.send(contactIP, Integer.parseInt(contactPort), "$" + state.userName + "$1$" + msg);
                     this.send(pClientIP, pClientPort, "+OK Message processed");
+                    state.lastMessages.add(msg);
+                    new java.util.Timer().schedule(
+                            new java.util.TimerTask() {
+                        @Override
+                        public void run() {
+                            state.lastMessages.remove(msg);
+                        }
+                    },
+                            60000
+                    );
                 }
             } catch (IndexOutOfBoundsException e) {
                 this.send(pClientIP, pClientPort, "-ERR Message malformed");
             }
         } else if (pMessage.startsWith("SENDTOALL ")) {
             try {
-                String msg = pMessage.split(" ", 2)[1];
-                this.broadCast("$" + state.userName + "$0$" + msg);
+                if (state.lastMessages.size() > 30) {
+                    this.send(pClientIP, pClientPort, "-ERR Ratelimited");
+                } else {
+                    String msg = pMessage.split(" ", 2)[1];
+                    this.broadCast("$" + state.userName + "$0$" + msg);
+                    state.lastMessages.add(msg);
+                    new java.util.Timer().schedule(
+                            new java.util.TimerTask() {
+                        @Override
+                        public void run() {
+                            state.lastMessages.remove(msg);
+                        }
+                    },
+                            60000
+                    );
+                }
             } catch (IndexOutOfBoundsException e) {
                 this.send(pClientIP, pClientPort, "-ERR Message malformed");
             }

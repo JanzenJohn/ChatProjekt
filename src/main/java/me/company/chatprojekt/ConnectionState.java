@@ -4,6 +4,8 @@
  */
 package me.company.chatprojekt;
 
+import java.util.ArrayList;
+
 /**
  * Daten Klasse die alle eigenschaften des Verbindungspartners hält
  * @author john
@@ -11,4 +13,5 @@ package me.company.chatprojekt;
 public class ConnectionState {
     boolean loggedIn = false;
     String userName = null;
+    ArrayList<String> lastMessages = new ArrayList<>();
 }

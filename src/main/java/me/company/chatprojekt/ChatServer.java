@@ -148,12 +148,12 @@ public class ChatServer extends Server {
         } else if (pMessage.startsWith(
                 "SENDTOALL ")) {
             try {
+                String msg = pMessage.split(" ", 2)[1];
                 if (state.lastMessages.size() > 30) {
                     this.send(pClientIP, pClientPort, "-ERR Ratelimited");
                 } else if (msg.length() > 1024) {
                     this.send(pClientIP, pClientPort, "-ERR Message too long");
                 } else {
-                    String msg = pMessage.split(" ", 2)[1];
                     this.broadCast("$" + state.userName + "$0$" + msg);
                     state.lastMessages.add(msg);
                     new java.util.Timer().schedule(

@@ -18,37 +18,31 @@ import java.sql.Statement;
 public class Database {
 
     private Connection connection;
-    private String login = """
-                           SELECT CASE WHEN EXISTS (
-                               SELECT *
-                               FROM USERS
-                               WHERE NICK = ?
-                               AND PASS = ?
-                           )
-                           THEN CAST(1 AS BIT)
-                           ELSE CAST(0 AS BIT) END""";
-    private String existance = """
-                           SELECT CASE WHEN EXISTS (
-                               SELECT *
-                               FROM USERS
-                               WHERE NICK = ?
-                           )
-                           THEN CAST(1 AS BIT)
-                           ELSE CAST(0 AS BIT) END""";
-    private String create = """
-                            INSERT INTO USERS (NICK, PASS) VALUES (?, ?)
-                            """;
+    private String login = "SELECT CASE WHEN EXISTS (\n"+
+                               "SELECT *\n"+
+                               "FROM USERS\n"+
+                               "WHERE NICK = ?\n"+
+                               "AND PASS = ?\n"+
+                           ")\n"+
+                           "THEN CAST(1 AS BIT)\n"+
+                           "ELSE CAST(0 AS BIT) END";
+    private String existance = "SELECT CASE WHEN EXISTS (\n"+
+                               "SELECT *\n"+
+                               "FROM USERS\n"+
+                               "WHERE NICK = ?\n"+
+                                ")\n"+
+                           "THEN CAST(1 AS BIT)\n"+
+                           "ELSE CAST(0 AS BIT) END";
+    private String create = "INSERT INTO USERS (NICK, PASS) VALUES (?, ?)";
 
     public Database() throws SQLException {
         String url = "jdbc:sqlite:user.db";
         this.connection = DriverManager.getConnection(url);
         Statement t = this.connection.createStatement();
-        t.execute("""
-                  CREATE TABLE IF NOT EXISTS USERS(
-                  NICK NVARCHAR(255),
-                  PASS NVARCHAR(255)
-                  )
-                  """);
+        t.execute("CREATE TABLE IF NOT EXISTS USERS(\n"+
+                  "NICK NVARCHAR(255),\n"+
+                  "PASS NVARCHAR(255)\n"+
+                  ")\n");
 
     }
 
